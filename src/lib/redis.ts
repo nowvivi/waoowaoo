@@ -10,11 +10,22 @@ const globalForRedis = globalThis as typeof globalThis & {
   __waoowaooRedis?: RedisSingleton
 }
 
-// ==============================================
-// 👇 关键：判断是否是 Vercel 构建环境
-// ==============================================
-const IS_VERCEL_BUILD = process.env.VERCEL === '1' || process.env.CI === 'true'
-const IS_BUILD_TIME = typeof window === 'undefined' && IS_VERCEL_BUILD
+// ==========================================
+// 👇 👇 👇 核心：构建时直接强制禁用 Redis
+// ==========================================
+const IS_CI = !!process.env.CI || !!process.env.VERCEL;
+if (IS_CI) {
+  // 构建环境直接导出空对象，永不创建 Redis
+  export const redis = {} as any;
+  export const queueRedis = {} as any;
+  export function createSubscriber() {
+    return {} as any;
+  }
+  return;
+}
+// ==========================================
+// 👆 👆 👆 以上代码在 Vercel 构建时直接阻断
+// ==========================================
 
 const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1'
 const REDIS_PORT = Number.parseInt(process.env.REDIS_PORT || '6379', 10) || 6379
@@ -44,13 +55,6 @@ function onConnectLog(scope: string, client: Redis) {
 }
 
 function createAppRedis() {
-  // ==============================================
-  // 👇 构建时直接返回空对象，不创建 Redis 实例
-  // ==============================================
-  if (IS_BUILD_TIME) {
-    return {} as Redis
-  }
-
   const client = new Redis({
     ...buildBaseConfig(),
     maxRetriesPerRequest: 2,
@@ -60,13 +64,6 @@ function createAppRedis() {
 }
 
 function createQueueRedis() {
-  // ==============================================
-  // 👇 构建时直接返回空对象，不创建 Redis 实例
-  // ==============================================
-  if (IS_BUILD_TIME) {
-    return {} as Redis
-  }
-
   const client = new Redis({
     ...buildBaseConfig(),
     maxRetriesPerRequest: null,
@@ -75,27 +72,15 @@ function createQueueRedis() {
   return client
 }
 
-// ==============================================
-// 👇 构建时不初始化 Redis
-// ==============================================
 const singleton = globalForRedis.__waoowaooRedis || {}
-if (!globalForRedis.__waoowaooRedis && !IS_BUILD_TIME) {
+if (!globalForRedis.__waoowaooRedis) {
   globalForRedis.__waoowaooRedis = singleton
 }
 
-export const redis = IS_BUILD_TIME 
-  ? ({} as Redis) 
-  : (singleton.app || (singleton.app = createAppRedis()))
-
-export const queueRedis = IS_BUILD_TIME
-  ? ({} as Redis)
-  : (singleton.queue || (singleton.queue = createQueueRedis()))
+export const redis = singleton.app || (singleton.app = createAppRedis())
+export const queueRedis = singleton.queue || (singleton.queue = createQueueRedis())
 
 export function createSubscriber() {
-  if (IS_BUILD_TIME) {
-    return {} as Redis
-  }
-
   const client = new Redis({
     ...buildBaseConfig(),
     maxRetriesPerRequest: null,

@@ -5,6 +5,7 @@ import { GeistMono } from 'geist/font/mono';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { Analytics } from '@vercel/analytics/next';
 import "../globals.css";
 import { Providers } from "./providers";
 
@@ -70,7 +71,7 @@ export default async function LocaleLayout({
                         {children}
                     </Providers>
                 </NextIntlClientProvider>
-
+                <Analytics />
             </body>
         </html>
     );

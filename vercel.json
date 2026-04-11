@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/**/*.{js,ts,jsx,tsx}": {
+      "maxDuration": 10
+    }
+  },
+  "installCommand": "npm install --legacy-peer-deps --ignore-scripts",
+  "buildCommand": "npm run build",
+  "devCommand": "next dev"
+}

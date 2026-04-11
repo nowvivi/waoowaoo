@@ -10,22 +10,22 @@ const globalForRedis = globalThis as typeof globalThis & {
   __waoowaooRedis?: RedisSingleton
 }
 
-// 👇 构建环境判断
+// 构建环境判断（Vercel）
 const IS_CI = !!process.env.CI || !!process.env.VERCEL
 
-// ==============================================
-// 构建时直接返回空对象，不连接 Redis
-// ==============================================
-if (IS_CI) {
-  const emptyClient = {} as any
-  export const redis = emptyClient
-  export const queueRedis = emptyClient
-  export function createSubscriber() {
-    return emptyClient
-  }
-} else {
+// ==========================================
+// 空客户端（构建时用）
+// ==========================================
+const emptyClient = {} as any
 
-  // 正常环境运行原来的逻辑
+// ==========================================
+// 正常环境逻辑
+// ==========================================
+let _redis: Redis
+let _queueRedis: Redis
+let _createSubscriber: () => Redis
+
+if (!IS_CI) {
   const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1'
   const REDIS_PORT = Number.parseInt(process.env.REDIS_PORT || '6379', 10) || 6379
   const REDIS_USERNAME = process.env.REDIS_USERNAME
@@ -76,10 +76,10 @@ if (IS_CI) {
     globalForRedis.__waoowaooRedis = singleton
   }
 
-  export const redis = singleton.app || (singleton.app = createAppRedis())
-  export const queueRedis = singleton.queue || (singleton.queue = createQueueRedis())
+  _redis = singleton.app || (singleton.app = createAppRedis())
+  _queueRedis = singleton.queue || (singleton.queue = createQueueRedis())
 
-  export function createSubscriber() {
+  _createSubscriber = function createSubscriber() {
     const client = new Redis({
       ...buildBaseConfig(),
       maxRetriesPerRequest: null,
@@ -88,3 +88,10 @@ if (IS_CI) {
     return client
   }
 }
+
+// ==========================================
+// 统一导出（符合语法！不会报错！）
+// ==========================================
+export const redis = IS_CI ? emptyClient : _redis
+export const queueRedis = IS_CI ? emptyClient : _queueRedis
+export const createSubscriber = IS_CI ? () => emptyClient : _createSubscriber

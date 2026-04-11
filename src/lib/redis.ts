@@ -10,20 +10,21 @@ const globalForRedis = globalThis as typeof globalThis & {
   __waoowaooRedis?: RedisSingleton
 }
 
-// 构建环境判断（Vercel）
+// 构建环境判断（Vercel CI）
 const IS_CI = !!process.env.CI || !!process.env.VERCEL
 
 // ==========================================
-// 空客户端（构建时用）
+// 空实现（构建时直接用）
 // ==========================================
-const emptyClient = {} as any
+const emptyClient = {} as Redis
+const emptyCreateSubscriber = () => emptyClient
 
 // ==========================================
 // 正常环境逻辑
 // ==========================================
-let _redis: Redis
-let _queueRedis: Redis
-let _createSubscriber: () => Redis
+let _redis: Redis = emptyClient
+let _queueRedis: Redis = emptyClient
+let _createSubscriber: () => Redis = emptyCreateSubscriber
 
 if (!IS_CI) {
   const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1'
@@ -90,8 +91,8 @@ if (!IS_CI) {
 }
 
 // ==========================================
-// 统一导出（符合语法！不会报错！）
+// 最终导出（绝对无语法错误）
 // ==========================================
-export const redis = IS_CI ? emptyClient : _redis
-export const queueRedis = IS_CI ? emptyClient : _queueRedis
-export const createSubscriber = IS_CI ? () => emptyClient : _createSubscriber
+export const redis = _redis
+export const queueRedis = _queueRedis
+export const createSubscriber = _createSubscriber

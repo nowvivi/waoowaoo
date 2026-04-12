@@ -10,31 +10,33 @@ const globalForRedis = globalThis as typeof globalThis & {
   __waoowaooRedis?: RedisSingleton
 }
 
-// 构建环境判断（Vercel CI）
-const IS_CI = !!process.env.CI || !!process.env.VERCEL
+// ==========================================
+// ✅ 关键修复：Vercel 环境也执行 Redis 逻辑
+// ==========================================
+const IS_BUILD_TIME = !!process.env.CI && process.env.NODE_ENV === 'production'
 
 // ==========================================
-// 空实现（构建时直接用）
+// 空实现（仅构建时用，运行时绝对不用）
 // ==========================================
 const emptyClient = {} as Redis
 const emptyCreateSubscriber = () => emptyClient
 
 // ==========================================
-// 正常环境逻辑
+// 正常环境逻辑（本地 + Vercel 运行时都执行）
 // ==========================================
 let _redis: Redis = emptyClient
 let _queueRedis: Redis = emptyClient
 let _createSubscriber: () => Redis = emptyCreateSubscriber
 
-if (!IS_CI) {
-  /*
-  const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1'
-  const REDIS_PORT = Number.parseInt(process.env.REDIS_PORT || '6379', 10) || 6379
-  const REDIS_USERNAME = process.env.REDIS_USERNAME
-  const REDIS_PASSWORD = process.env.REDIS_PASSWORD
-  const REDIS_TLS = process.env.REDIS_TLS === 'true' || REDIS_HOST.includes('upstash.io')
-  */
-  // ✅ 强制写死 Upstash（无视环境变量！）
+// ✅ 仅在构建时用空实现，运行时（本地/Vercel）都执行真实 Redis 逻辑
+if (IS_BUILD_TIME) {
+  _redis = emptyClient
+  _queueRedis = emptyClient
+  _createSubscriber = emptyCreateSubscriber
+} else {
+  // ==========================================
+  // ✅ 强制写死 Upstash 配置（本地/Vercel 都生效）
+  // ==========================================
   const REDIS_HOST = "enormous-mackerel-97187.upstash.io"
   const REDIS_PORT = 6379
   const REDIS_USERNAME = "default"
@@ -100,7 +102,7 @@ if (!IS_CI) {
 }
 
 // ==========================================
-// 最终导出（绝对无语法错误）
+// 最终导出
 // ==========================================
 export const redis = _redis
 export const queueRedis = _queueRedis

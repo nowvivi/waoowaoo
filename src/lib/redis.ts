@@ -27,13 +27,20 @@ let _queueRedis: Redis = emptyClient
 let _createSubscriber: () => Redis = emptyCreateSubscriber
 
 if (!IS_CI) {
+  /*
   const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1'
   const REDIS_PORT = Number.parseInt(process.env.REDIS_PORT || '6379', 10) || 6379
   const REDIS_USERNAME = process.env.REDIS_USERNAME
   const REDIS_PASSWORD = process.env.REDIS_PASSWORD
-
-  // 改成 → 自动识别 Upstash 并开启 TLS
   const REDIS_TLS = process.env.REDIS_TLS === 'true' || REDIS_HOST.includes('upstash.io')
+  */
+  // ✅ 强制写死 Upstash（无视环境变量！）
+  const REDIS_HOST = "enormous-mackerel-97187.upstash.io"
+  const REDIS_PORT = 6379
+  const REDIS_USERNAME = "default"
+  const REDIS_PASSWORD = "gQAAAAAAAXujAAIncDEyMWJiMzY2MDdiYmU0YjFlYjYzNTY4ZmY4Y2MzMTkwZnAxOTcxODc"
+  const REDIS_TLS = true
+
   const IS_TEST_ENV = process.env.NODE_ENV === 'test'
 
   function buildBaseConfig() {

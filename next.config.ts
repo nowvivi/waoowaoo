@@ -17,8 +17,19 @@ const nextConfig: NextConfig = {
   output: "standalone",
   swcMinify: true,
   experimental: {
-    serverComponentsExternalPackages: ["sharp", "prisma"],
+    serverComponentsExternalPackages: [
+      "sharp",
+      "prisma",
+      "canvas"
+    ],
   },
+  // 关键：禁止把巨大依赖打包进 Serverless 函数
+  webpack: (config) => {
+    config.externals = [...(config.externals || []), "sharp", "prisma"];
+    return config;
+  },
+  // 关闭不必要的缓存上传
+  cleanDistDir: true,
 };
 
 export default withNextIntl(nextConfig);

@@ -4,8 +4,6 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 const nextConfig: NextConfig = {
-  // 已删除 ignoreBuildErrors / ignoreDuringBuilds，构建保持严格门禁
-  // Next 15 的 allowedDevOrigins 是顶层配置，不属于 experimental
   allowedDevOrigins: [
     'http://192.168.31.218:3000',
     'http://192.168.31.*:3000',
@@ -16,20 +14,34 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   output: "standalone",
   swcMinify: true,
+  cleanDistDir: true,
+  poweredByHeader: false,
+
   experimental: {
     serverComponentsExternalPackages: [
       "sharp",
       "prisma",
-      "canvas"
+      "canvas",
+      "ffmpeg"
     ],
+    // 显式排除缓存目录，彻底拦截打包
+    outputFileTracingExcludes: {
+      '*': [
+        '.next/cache/**',
+        'node_modules/.cache/**',
+        '.git/**',
+        '*.log'
+      ]
+    }
   },
-  // 关键：禁止把巨大依赖打包进 Serverless 函数
-  webpack: (config) => {
-    config.externals = [...(config.externals || []), "sharp", "prisma"];
+
+  // 仅在服务端打包时排除依赖，避免客户端异常
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), "sharp", "prisma", "canvas"];
+    }
     return config;
   },
-  // 关闭不必要的缓存上传
-  cleanDistDir: true,
 };
 
 export default withNextIntl(nextConfig);

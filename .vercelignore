@@ -1,5 +1,18 @@
+# 核心：彻底排除544MB的webpack缓存
 .next/cache
+.next/standalone/.next/cache
+.next/cache/**/*
+
+# 依赖缓存
 node_modules/.cache
+node_modules/.cache/**/*
+
+# 版本控制与系统文件
 .git
 .DS_Store
+
+# 日志与冗余文件
 *.log
+package-lock.json
+npm-debug.log
+yarn-error.log

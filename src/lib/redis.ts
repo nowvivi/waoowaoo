@@ -31,7 +31,9 @@ if (!IS_CI) {
   const REDIS_PORT = Number.parseInt(process.env.REDIS_PORT || '6379', 10) || 6379
   const REDIS_USERNAME = process.env.REDIS_USERNAME
   const REDIS_PASSWORD = process.env.REDIS_PASSWORD
-  const REDIS_TLS = process.env.REDIS_TLS === 'true'
+
+  // 改成 → 自动识别 Upstash 并开启 TLS
+  const REDIS_TLS = process.env.REDIS_TLS === 'true' || REDIS_HOST.includes('upstash.io')
   const IS_TEST_ENV = process.env.NODE_ENV === 'test'
 
   function buildBaseConfig() {

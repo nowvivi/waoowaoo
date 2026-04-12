@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   output: "standalone",
   swcMinify: true,
+  experimental: {
+    serverComponentsExternalPackages: ["sharp", "prisma"],
+  },
 };
 
 export default withNextIntl(nextConfig);

@@ -7,9 +7,10 @@
   "rewrites": [
   {
     "source": "/api/:path*",
-    "destination": "http://api.aivideoly.com/api/:path*"
+    "destination": "https://api.aivideoly.com/api/:path*"
   }
   ],
+  
   "installCommand": "npm install --legacy-peer-deps --ignore-scripts",
   "buildCommand": "npm run build",
   "devCommand": "next dev"

@@ -44,9 +44,20 @@ export function mergeLocaleHeader(init?: RequestInit): RequestInit {
   return { ...init, headers }
 }
 
+// 这一行是关键！所有请求直接发到你的后端服务器
+const API_BASE_URL = "https://api.aivideoly.com";
+
 export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  if (!shouldInjectLocaleHeader(input)) {
-    return fetch(input, init)
+  let url = input;
+
+  // 自动拼接完整后端地址
+  if (typeof url === "string" && url.startsWith("/api")) {
+    url = API_BASE_URL + url;
   }
-  return fetch(input, mergeLocaleHeader(init))
+
+  if (!shouldInjectLocaleHeader(url)) {
+    return fetch(url, init);
+  }
+  
+  return fetch(url, mergeLocaleHeader(init));
 }

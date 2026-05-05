@@ -12,34 +12,16 @@ const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
-  output: "standalone",
+
+  // 👇 只改了这里！！！
+  output: "export",
+
   swcMinify: true,
   cleanDistDir: true,
   poweredByHeader: false,
 
-  experimental: {
-    serverComponentsExternalPackages: [
-      "sharp",
-      "prisma",
-      "canvas",
-      "ffmpeg"
-    ],
-    // 显式排除缓存目录，彻底拦截打包
-    outputFileTracingExcludes: {
-      '*': [
-        '.next/cache/**',
-        'node_modules/.cache/**',
-        '.git/**',
-        '*.log'
-      ]
-    }
-  },
-
-  // 仅在服务端打包时排除依赖，避免客户端异常
+  // 👇 删掉所有服务端相关实验配置
   webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals = [...(config.externals || []), "sharp", "prisma", "canvas"];
-    }
     return config;
   },
 };

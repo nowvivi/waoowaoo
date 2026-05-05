@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
 
   // 👇 只改了这里！！！
-  output: "export",
+  output: "standalone",
 
   swcMinify: true,
   cleanDistDir: true,

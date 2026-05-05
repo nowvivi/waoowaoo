@@ -2,6 +2,7 @@
 // https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
 
 export async function register() {
+  return
   // 在 Edge Runtime 中直接返回，避免加载 Prisma（它使用了动态代码生成）
   if (process.env.NEXT_RUNTIME === 'edge') {
     return
